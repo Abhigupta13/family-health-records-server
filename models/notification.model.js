@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
 const notificationSchema = new mongoose.Schema({
   user_id: {
