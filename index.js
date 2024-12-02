@@ -14,6 +14,7 @@ const dashboardRoutes = require('./routes/Dashboard.route');
 const emergencyAccessRoutes = require('./routes/Emergency.route');
 const notificationRoutes = require('./routes/Notification.route');
 const healthUpdateRoutes = require('./routes/healthUpdateRoutes');
+const addressRoutes = require('./routes/Address.route');
 
 // Middleware to parse incoming requests
 app.use(express.json()); // For parsing application/json
@@ -35,6 +36,7 @@ app.use('/', dashboardRoutes);  //in dashboardRoutes i write the code of  health
 app.use('/emergency', emergencyAccessRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/api', healthUpdateRoutes);
+app.use('/add', addressRoutes);
 
 
 
