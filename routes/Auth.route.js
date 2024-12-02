@@ -1,8 +1,7 @@
 const express = require('express');
-const { resetPasswordRequest, createUser, loginUser, checkAuth, logout, resetPassword, getUserProfile,updateUserProfile ,forgotPassword} = require('../controllers/AuthController');
+const { resetPasswordRequest, createUser, loginUser, checkAuth, logout, resetPassword, getUserProfile,updateUserProfile} = require('../controllers/AuthController');
 const { isAuthenticated } = require('../middlewares/auth.middleware');
-const { addFamilyMember,getFamilyMembers,updateFamilyMember} = require('../controllers/familyAuthController');
-const familyController = require('../controllers/familyAuthController');
+const { forgotPassword } = require('../controllers/AuthController');
 
 const router = express.Router();
 
@@ -10,8 +9,9 @@ const router = express.Router();
 router.post('/signup', createUser)
   .post('/login', loginUser)
   .post('/logout', isAuthenticated, logout)
-  .post('/reset-password-request', resetPasswordRequest)
-  .post('/reset-password', resetPassword)
+  .post('/forgot-password',isAuthenticated,forgotPassword)
+  // .post('/reset-password-request', resetPasswordRequest)
+  // .post('/reset-password', resetPassword)
   
 // Route for fetching user profile (authenticated)
 router.get('/profile', isAuthenticated, getUserProfile);
