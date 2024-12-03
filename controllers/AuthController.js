@@ -1,5 +1,5 @@
 const { User } = require('../models/user.model');
-const { sendMail } = require('../utils/common');
+const {sendPasswordResetEmail} = require('../services/PassResetService');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const FamilyMember = require('../models/FamilyMember.model');
@@ -146,6 +146,27 @@ exports.loginUser = async (req, res) => {
   }
 };
 
+//forgot-password;
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  
+  try {
+    // Generate a mock reset token (in real implementation, this would be done securely)
+    const resetToken = Math.random().toString(36).substring(2, 15); // Random token for testing
+    
+    // Mock database update (in reality, you would update the user's record with the reset token)
+    console.log(`Generated reset token for ${email}: ${resetToken}`);
+    
+    // Call the mock email sending function
+    await sendPasswordResetEmail(email, resetToken);
+    
+    // Respond to the client with a success message
+    res.status(200).json({ success: true, message: 'Password reset email sent successfully (Mock)' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: `Error sending reset email: ${err.message}` });
+  }
+};
 
 //update profile
 exports.updateUserProfile = async (req, res) => {
@@ -220,83 +241,83 @@ exports.logout = async (req, res) => {
 };
 
 
-exports.resetPasswordRequest = async (req, res) => {
-  try {
-    const email = req.body.email;
-    const user = await User.findOne({ email: email });
+// exports.resetPasswordRequest = async (req, res) => {
+//   try {
+//     const email = req.body.email;
+//     const user = await User.findOne({ email: email });
 
-    if (!user) {
-      return res.status(404).json({ message: `User not found: ${err}` });
-    }
+//     if (!user) {
+//       return res.status(404).json({ message: `User not found: ${err}` });
+//     }
 
-    const token = crypto.randomBytes(48).toString('hex');
-    user.resetPasswordToken = token;
-    await user.save();
+//     const token = crypto.randomBytes(48).toString('hex');
+//     user.resetPasswordToken = token;
+//     await user.save();
 
-    const resetPageLink =
-      'https://ecommerce-server-xvqq.onrender.com/reset-password?token=' + token + '&email=' + email;
-    const subject = 'Reset password for e-commerce';
-    const html = `<p>Click <a href='${resetPageLink}'>here</a> to reset your password</p>`;
+//     const resetPageLink =
+//       'https://ecommerce-server-xvqq.onrender.com/reset-password?token=' + token + '&email=' + email;
+//     const subject = 'Reset password for e-commerce';
+//     const html = `<p>Click <a href='${resetPageLink}'>here</a> to reset your password</p>`;
 
-    if (email) {
-      try {
-        const response = await sendMail({ to: email, subject, html });
-        res.json(response);
-      } catch (mailError) {
-        console.error(mailError);
-        res.status(500).json({ message: `Error sending reset email: ${mailError}` });
-      }
-    } else {
-      res.status(400).json({ message: `Invalid email address: ${err}` });
-    }
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: `Server error during password reset request: ${err}` });
-  }
-};
+//     if (email) {
+//       try {
+//         const response = await sendMail({ to: email, subject, html });
+//         res.json(response);
+//       } catch (mailError) {
+//         console.error(mailError);
+//         res.status(500).json({ message: `Error sending reset email: ${mailError}` });
+//       }
+//     } else {
+//       res.status(400).json({ message: `Invalid email address: ${err}` });
+//     }
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: `Server error during password reset request: ${err}` });
+//   }
+// };
 
-exports.resetPassword = async (req, res) => {
-  try {
-    const { email, password, token } = req.body;
-    const user = await User.findOne({ email: email, resetPasswordToken: token });
+// exports.resetPassword = async (req, res) => {
+//   try {
+//     const { email, password, token } = req.body;
+//     const user = await User.findOne({ email: email, resetPasswordToken: token });
 
-    if (!user) {
-      return res.status(400).json({ message: `Invalid or expired token: ${err}` });
-    }
+//     if (!user) {
+//       return res.status(400).json({ message: `Invalid or expired token: ${err}` });
+//     }
 
-    const salt = crypto.randomBytes(16);
-    crypto.pbkdf2(password, salt, 310000, 32, 'sha256', async function (err, hashedPassword) {
-      if (err) {
-        return res.status(500).json({ message: `Error encrypting new password: ${err}` });
-      }
+//     const salt = crypto.randomBytes(16);
+//     crypto.pbkdf2(password, salt, 310000, 32, 'sha256', async function (err, hashedPassword) {
+//       if (err) {
+//         return res.status(500).json({ message: `Error encrypting new password: ${err}` });
+//       }
 
-      try {
-        user.password = hashedPassword;
-        user.salt = salt;
-        user.resetPasswordToken = null; // Clear the reset token
-        await user.save();
+//       try {
+//         user.password = hashedPassword;
+//         user.salt = salt;
+//         user.resetPasswordToken = null; // Clear the reset token
+//         await user.save();
 
-        const subject = 'Password successfully reset for e-commerce';
-        const html = `<p>Your password has been successfully reset.</p>`;
+//         const subject = 'Password successfully reset for e-commerce';
+//         const html = `<p>Your password has been successfully reset.</p>`;
 
-        if (email) {
-          try {
-            const response = await sendMail({ to: email, subject, html });
-            res.json(response);
-          } catch (mailError) {
-            console.error(mailError);
-            res.status(500).json({ message: `Error sending confirmation email: ${mailError}` });
-          }
-        } else {
-          res.status(400).json({ message: `Invalid email address: ${err}` });
-        }
-      } catch (saveError) {
-        console.error(saveError);
-        res.status(500).json({ message: `Error saving new password: ${saveError}` });
-      }
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: `Server error during password reset: ${err}` });
-  }
-};
+//         if (email) {
+//           try {
+//             const response = await sendMail({ to: email, subject, html });
+//             res.json(response);
+//           } catch (mailError) {
+//             console.error(mailError);
+//             res.status(500).json({ message: `Error sending confirmation email: ${mailError}` });
+//           }
+//         } else {
+//           res.status(400).json({ message: `Invalid email address: ${err}` });
+//         }
+//       } catch (saveError) {
+//         console.error(saveError);
+//         res.status(500).json({ message: `Error saving new password: ${saveError}` });
+//       }
+//     });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: `Server error during password reset: ${err}` });
+//   }
+// };
