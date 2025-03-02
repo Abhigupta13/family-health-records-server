@@ -4,7 +4,12 @@ const { Schema } = mongoose;
 const userSchema = new Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, required: true, default:'user' },
+  role: { 
+    type: String, 
+    required: true, 
+    enum: ['Admin', 'Doctor', 'User'],
+    default: 'User'
+  },
   addresses: [{ type: Schema.Types.ObjectId, ref: 'Address' }],
   name: { type: String },
   resetPasswordToken: {type: String, default:''}
