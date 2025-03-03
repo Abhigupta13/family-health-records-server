@@ -2,11 +2,12 @@ const express = require('express');
 const { resetPasswordRequest, createUser, loginUser, checkAuth, logout, resetPassword, getUserProfile,updateUserProfile} = require('../controllers/AuthController');
 const { isAuthenticated } = require('../middlewares/auth.middleware');
 const { forgotPassword } = require('../controllers/AuthController');
+const upload = require('../middlewares/multer.js');
 
 const router = express.Router();
-
+//some routes added and some testing;
 // Routes for user authentication
-router.post('/signup', createUser)
+router.post('/signup',upload.single('image'), createUser)
   .post('/login', loginUser)
   .post('/logout', isAuthenticated, logout)
   .post('/forgot-password',isAuthenticated,forgotPassword)
@@ -17,7 +18,7 @@ router.post('/signup', createUser)
 router.get('/profile', isAuthenticated, getUserProfile);
 
 // Route for updating user profile (authenticated)
-router.put('/profile', isAuthenticated, updateUserProfile);
+router.put('/profile',isAuthenticated, upload.single('image'),updateUserProfile);
 
 
 // // POST route to add a new family member

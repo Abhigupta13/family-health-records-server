@@ -1,32 +1,31 @@
 const { User } = require('../models/user.model');
-const {sendPasswordResetEmail} = require('../services/PassResetService');
+const { sendPasswordResetEmail } = require('../services/PassResetService');
 const jwt = require('jsonwebtoken');
-const crypto = require('crypto');
-const FamilyMember = require('../models/FamilyMember.model');
-const NotificationPreferences = require('../models/notificationPreferences.model');
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const validator = require('validator'); // Importing the validator library
-
 const bcrypt = require('bcrypt');
+const uploadToCloudinary = require('../utils/cloudinary');
+const NotificationPreferences = require('../models/notificationPreferences.model');
+const validator = require('validator');
 
+const validRoles = ['Admin', 'Doctor', 'User']; // ✅ Valid roles
+
+// ✅ Get User Profile
 exports.getUserProfile = async (req, res) => {
   try {
-    // Retrieve the user from the request (set by the authentication middleware)
-    const user = await User.findById(req.user.id).select('-password -salt'); // Exclude sensitive data
+    const user = await User.findById(req.user.id).select('-password -salt');
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Return user profile information
     res.status(200).json({
       success: true,
       data: {
         name: user.name,
         email: user.email,
         role: user.role, // Include role in the response
-        created_at: user.createdAt, // Assuming the `createdAt` field exists in your User model
-      }
+        image: user.image,
+        created_at: user.createdAt,
+      },
     });
   } catch (err) {
     console.error(err);
@@ -34,33 +33,36 @@ exports.getUserProfile = async (req, res) => {
   }
 };
 
+// ✅ Create User (Signup)
 exports.createUser = async (req, res) => {
   try {
     const { email, password, role } = req.body;
 
-    // 1. Validate the email format
     if (!validator.isEmail(email)) {
       return res.status(400).json({ success: false, message: 'Invalid email format' });
     }
 
-    // 2. Check if the email already exists
     const alreadyExist = await User.findOne({ email });
     if (alreadyExist) {
       return res.status(400).json({ success: false, message: 'Email already exists' });
     }
 
-    // 3. Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 4. Create a new user with the hashed password
-    const user = new User({ ...req.body, password: hashedPassword, salt });
+    let imageUrl = '';
+    if (req.file) {
+      const uploadResult = await uploadToCloudinary(req.file.path);
+      imageUrl = uploadResult.secure_url;
+    }
+
+    const userRole = validRoles.includes(role) ? role : 'User'; // ✅ Ensure role is valid
+
+    const user = new User({ ...req.body, role: userRole, password: hashedPassword, salt, image: imageUrl });
     const doc = await user.save();
 
-    // 5. Generate JWT token
     const token = jwt.sign({ id: doc.id, role: doc.role }, process.env.JWT_SECRET_KEY, { expiresIn: '1d' });
 
-    // 6. Create default notification preferences for the user
     const preferences = new NotificationPreferences({
       user_id: doc.id,
       email_notifications: true,
@@ -69,99 +71,68 @@ exports.createUser = async (req, res) => {
     });
     await preferences.save();
 
-    // 7. Send the response with the token and user information
     res.status(201).json({
       success: true,
       message: 'User created successfully',
-      data: {
-        id: doc.id,
-        role: doc.role,
-        token: token,
-        notification_preferences: preferences,
-      },
+      data: { id: doc.id, role: doc.role, image: doc.image, token, notification_preferences: preferences },
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({
-      success: false,
-      message: `Server error during user creation: ${err}`,
-    });
+    res.status(500).json({ success: false, message: `Server error during user creation: ${err}` });
   }
 };
 
-
-//login
+// ✅ Login User
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate input
     if (!email || !password) {
       return res.status(400).json({ success: false, message: 'Email and password are required' });
     }
 
-    // Find the user by email
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: `Unauthorized access: Invalid email or password`
-      });
-    }
-
-    // Compare the provided password with the stored hashed password
-    if (typeof password !== 'string' || typeof user.password !== 'string') {
-      return res.status(400).json({
-        success: false,
-        message: `Invalid password format`
-      });
+      return res.status(401).json({ success: false, message: 'Unauthorized access: Invalid email or password' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: `Unauthorized access: Invalid email or password`
-      });
+      return res.status(401).json({ success: false, message: 'Unauthorized access: Invalid email or password' });
     }
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET_KEY, { expiresIn: '1d' });
+    const userRole = validRoles.includes(user.role) ? user.role : 'User'; // ✅ Ensure valid role
 
-    // Respond with the user data and token
+    const token = jwt.sign({ id: user.id, role: userRole }, process.env.JWT_SECRET_KEY, { expiresIn: '1d' });
+
     res.status(200).json({
       success: true,
       message: 'Login successful',
       data: {
         id: user.id,
-        role: user.role, // Include role in the response
-        token: token
-      }
+        role: userRole, // Include role in the response
+        image: user.image, // ✅ Added image here
+        token,
+      },
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({
-      success: false,
-      message: `Error logging in user: ${err}`
-    });
+    res.status(500).json({ success: false, message: `Error logging in user: ${err}` });
   }
 };
 
-//forgot-password;
+
+// ✅ Forgot Password
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
   
   try {
-    // Generate a mock reset token (in real implementation, this would be done securely)
-    const resetToken = Math.random().toString(36).substring(2, 15); // Random token for testing
+    const resetToken = Math.random().toString(36).substring(2, 15);
     
-    // Mock database update (in reality, you would update the user's record with the reset token)
     console.log(`Generated reset token for ${email}: ${resetToken}`);
     
-    // Call the mock email sending function
     await sendPasswordResetEmail(email, resetToken);
     
-    // Respond to the client with a success message
     res.status(200).json({ success: true, message: 'Password reset email sent successfully (Mock)' });
   } catch (err) {
     console.error(err);
@@ -169,45 +140,47 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-//update profile
+// ✅ Update User Profile
 exports.updateUserProfile = async (req, res) => {
   try {
-    // Retrieve the user from the request (set by the authentication middleware)
-    const userId = req.user.id; // Assuming req.user is populated by an authentication middleware (e.g., JWT)
-    const { name, email, password } = req.body; // Destructure name, email, and password from the request body
+    const userId = req.user.id;
+    const { name, email, password, role } = req.body;
 
-    // Find the user in the database by user ID
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    // Check if the email has changed and if the new email already exists
     if (email && email !== user.email) {
       const existingUser = await User.findOne({ email });
       if (existingUser) {
         return res.status(400).json({ success: false, message: 'Email already exists' });
       }
-      user.email = email; // Update the email if it has changed
+      user.email = email;
     }
 
-    // Update the name if provided
     if (name && name !== user.name) {
-      user.name = name; // Update the name if it has changed
+      user.name = name;
     }
 
-    // Check if password is being updated and hash it if provided
     if (password) {
-      const salt = await bcrypt.genSalt(10); // Generate a salt for password hashing
-      const hashedPassword = await bcrypt.hash(password, salt); // Hash the password
-      user.password = hashedPassword; // Update the password field
-      user.salt = salt; // Save the new salt value
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+      user.password = hashedPassword;
+      user.salt = salt;
     }
 
-    // Save the updated user information
+    if (role && validRoles.includes(role)) { // ✅ Ensure valid role
+      user.role = role;
+    }
+
+    if (req.file) {
+      const uploadResult = await uploadToCloudinary(req.file.path);
+      user.image = uploadResult.secure_url;
+    }
+
     await user.save();
 
-    // Return updated user info (excluding password)
     res.status(200).json({
       success: true,
       message: 'User profile updated successfully',
@@ -215,8 +188,9 @@ exports.updateUserProfile = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role, // Include role in the response
-        created_at: user.createdAt, // You can include other fields if needed
-      }
+        image: user.image,
+        created_at: user.createdAt,
+      },
     });
   } catch (err) {
     console.error(err);
@@ -224,17 +198,9 @@ exports.updateUserProfile = async (req, res) => {
   }
 };
 
-
-
-//logout
+// ✅ Logout User
 exports.logout = async (req, res) => {
   try {
-    // If you're using JWTs, you can invalidate them by adding them to a token blacklist.
-    // Or simply rely on the client to discard the token.
-    
-    // Optional: Clear any server-side session if applicable (e.g., with Redis)
-    // await sessionService.clearSession(req.user.id);
-
     return res.status(200).json({ message: 'Logout successful.' });
   } catch (err) {
     console.error('Error during logout:', err);

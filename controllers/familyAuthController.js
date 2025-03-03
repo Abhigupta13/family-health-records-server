@@ -3,52 +3,85 @@ const { sendMail } = require('../utils/common');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const FamilyMember = require('../models/FamilyMember.model');
+const uploadToCloudinary = require('../utils/cloudinary.js');
 
 const bcrypt = require('bcrypt');
 
 
 // Function to add a new family member
 exports.addFamilyMembers = async (req, res) => {
-    try {
-      const { name, relation, age } = req.body;
-      const user_id = req.user.id; // Assuming you are attaching the user to the request after authentication
-  
-      // Create a new family member
-      const newFamilyMember = new FamilyMember({
-        user_id,
-        name,
-        relation,
-        birth_date: new Date().setFullYear(new Date().getFullYear() - age), // Estimate birth date from age
-      });
-  
-      await newFamilyMember.save();
-      return res.status(201).json({ message: 'Family member added successfully', data: newFamilyMember });
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: 'Internal server error' });
+  try {
+    const { name, relation, email } = req.body;
+    const userId = req.user.id; // ✅ Get user ID from authenticated request
+
+    if (!name || !relation) {
+      return res.status(400).json({ success: false, message: 'Name and relation are required' });
     }
-  };
+
+    // ✅ Prevent duplicate email for different users
+    if (email) {
+      const existingMember = await FamilyMember.findOne({ email, user_id: userId });
+      if (existingMember) {
+        return res.status(400).json({ success: false, message: 'Email already exists for this user' });
+      }
+    }
+
+    const newMember = new FamilyMember({
+      user_id: userId, // ✅ Associate family member with the user
+      name,
+      relation,
+      email: email || null,
+    });
+
+    await newMember.save();
+
+    return res.status(201).json({ success: true, message: 'Family member added successfully', data: newMember });
+  } catch (error) {
+    console.error('Error adding family member:', error.message);
+    return res.status(500).json({ success: false, message: 'Internal server error', error: error.message });
+  }
+};
+
   
   // Get all family members for the authenticated user
   exports.getFamilyMembers = async (req, res) => {
     try {
-      const userId = req.user.id; // Assuming the user is added to the request object by the authentication middleware
-      
-      // Find all family members for the authenticated user
-      const familyMembers = await FamilyMember.find({ user_id: userId }).select('name relation age'); // Select specific fields (name, relation, age)
+      const userId = req.user.id; // ✅ Get user ID from token
   
-      if (!familyMembers || familyMembers.length === 0) {
+      const familyMembers = await FamilyMember.find({ user_id: userId });
+  
+      if (!familyMembers.length) {
         return res.status(404).json({ success: false, message: 'No family members found' });
       }
   
-      // Return the list of family members
-      res.status(200).json({
-        success: true,
-        data: familyMembers
-      });
+      return res.status(200).json({ success: true, data: familyMembers });
+    } catch (error) {
+      console.error('Error retrieving family members:', error.message);
+      return res.status(500).json({ success: false, message: 'Internal server error', error: error.message });
+    }
+  };
+  
+  
+  exports.updateFamilyMembers = async (req, res) => {
+    try {
+      const familyMemberId = req.params.id;
+      const updatedData = req.body;
+      
+      if (req.file) {
+        const uploadResult = await uploadToCloudinary(req.file.path);
+        updatedData.image = uploadResult.secure_url;
+      }
+  
+      const familyMember = await FamilyMember.findByIdAndUpdate(familyMemberId, updatedData, { new: true });
+  
+      if (!familyMember) {
+        return res.status(404).json({ message: 'Family member not found' });
+      }
+  
+      res.status(200).json({ message: 'Family member updated successfully', data: familyMember });
     } catch (err) {
       console.error(err);
-      res.status(500).json({ success: false, message: `Error retrieving family members: ${err.message}` });
+      res.status(500).json({ message: 'Error updating family member', error: err.message });
     }
   };
   

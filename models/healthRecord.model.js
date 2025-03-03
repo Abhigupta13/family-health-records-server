@@ -30,6 +30,7 @@ const healthRecordSchema = new mongoose.Schema({
   follow_up_date: {
     type: Date,
   },
+  images: [{ type: String }], // ✅ Added array to store image URLs
   created_at: {
     type: Date,
     default: Date.now,
@@ -40,7 +41,6 @@ const healthRecordSchema = new mongoose.Schema({
   },
 });
 
-// Check for existing model
 const HealthRecord = mongoose.models.HealthRecord || mongoose.model('HealthRecord', healthRecordSchema);
 
 module.exports = HealthRecord;
