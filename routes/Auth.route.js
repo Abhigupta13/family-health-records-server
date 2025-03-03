@@ -5,7 +5,7 @@ const { forgotPassword } = require('../controllers/AuthController');
 const upload = require('../middlewares/multer.js');
 
 const router = express.Router();
-
+//some routes added and some testing;
 // Routes for user authentication
 router.post('/signup',upload.single('image'), createUser)
   .post('/login', loginUser)
