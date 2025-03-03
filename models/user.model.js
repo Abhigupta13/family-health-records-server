@@ -12,13 +12,15 @@ const userSchema = new Schema({
   },
   addresses: [{ type: Schema.Types.ObjectId, ref: 'Address' }],
   name: { type: String },
-  resetPasswordToken: {type: String, default:''}
-},{timestamps: true});
+  image: { type: String, default: '' },  // ✅ New field for profile image
+  resetPasswordToken: { type: String, default: '' }
+}, { timestamps: true });
 
 const virtual = userSchema.virtual('id');
 virtual.get(function () {
   return this._id;
 });
+
 userSchema.set('toJSON', {
   virtuals: true,
   versionKey: false,

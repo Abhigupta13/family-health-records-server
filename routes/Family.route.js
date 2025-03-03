@@ -6,19 +6,20 @@ const {
     deleteFamilyMembers,
 } = require('../controllers/familyAuthController');
 const { isAuthenticated } = require('../middlewares/auth.middleware');
+const upload = require('../middlewares/multer.js');
 
 const router = express.Router();
 
-// POST route to add a new family member
-router.post('/', isAuthenticated, addFamilyMembers);
+// POST route to add a new family member with image upload
+router.post('/', isAuthenticated, upload.single('image'), addFamilyMembers);
 
-// Route for getting family members (Authenticated)
+// GET route to retrieve family members
 router.get('/', isAuthenticated, getFamilyMembers);
 
-// PUT endpoint to update a family member
-router.put('/:id', isAuthenticated, updateFamilyMembers);
+// PUT route to update a family member (supports image update)
+router.put('/:id', isAuthenticated, upload.single('image'), updateFamilyMembers);
 
-// DELETE /family/:id - Delete family member by ID
+// DELETE route to remove a family member by ID
 router.delete('/:id', isAuthenticated, deleteFamilyMembers);
 
 module.exports = router;
