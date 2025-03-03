@@ -15,6 +15,7 @@ const emergencyAccessRoutes = require('./routes/Emergency.route');
 const notificationRoutes = require('./routes/Notification.route');
 const healthUpdateRoutes = require('./routes/healthUpdateRoutes');
 const addressRoutes = require('./routes/Address.route');
+const ocrRoutes = require('./routes/ocr.route');
 
 // Middleware to parse incoming requests
 app.use(express.json()); // For parsing application/json
@@ -37,6 +38,7 @@ app.use('/emergency', emergencyAccessRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/api', healthUpdateRoutes);
 app.use('/add', addressRoutes);
+app.use('/ocr', ocrRoutes);
 
 
 

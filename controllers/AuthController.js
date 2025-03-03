@@ -24,6 +24,7 @@ exports.getUserProfile = async (req, res) => {
       data: {
         name: user.name,
         email: user.email,
+        role: user.role, // Include role in the response
         created_at: user.createdAt, // Assuming the `createdAt` field exists in your User model
       }
     });
@@ -133,7 +134,7 @@ exports.loginUser = async (req, res) => {
       message: 'Login successful',
       data: {
         id: user.id,
-        role: user.role,
+        role: user.role, // Include role in the response
         token: token
       }
     });
@@ -213,6 +214,7 @@ exports.updateUserProfile = async (req, res) => {
       data: {
         name: user.name,
         email: user.email,
+        role: user.role, // Include role in the response
         created_at: user.createdAt, // You can include other fields if needed
       }
     });
@@ -239,7 +241,6 @@ exports.logout = async (req, res) => {
     return res.status(500).json({ message: `Error during logout: ${err.message}` });
   }
 };
-
 
 // exports.resetPasswordRequest = async (req, res) => {
 //   try {

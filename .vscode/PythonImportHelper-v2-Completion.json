@@ -1,0 +1,37 @@
+[
+    {
+        "label": "sys",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "sys",
+        "description": "sys",
+        "detail": "sys",
+        "documentation": {}
+    },
+    {
+        "label": "pytesseract",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pytesseract",
+        "description": "pytesseract",
+        "detail": "pytesseract",
+        "documentation": {}
+    },
+    {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "image_path",
+        "kind": 5,
+        "importPath": "utils.ocr",
+        "description": "utils.ocr",
+        "peekOfCode": "image_path = sys.argv[1]\ntry:\n    # Open the image\n    img = Image.open(image_path)\n    # Convert to grayscale and process with pytesseract\n    text = pytesseract.image_to_string(img, config='--psm 6')\n    # Print extracted text (Node.js will capture this output)\n    print(text)\nexcept Exception as e:\n    print(f\"Error: {e}\", file=sys.stderr)  # Print error to stderr for better visibility",
+        "detail": "utils.ocr",
+        "documentation": {}
+    }
+]
