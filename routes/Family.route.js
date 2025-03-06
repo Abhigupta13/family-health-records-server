@@ -4,6 +4,7 @@ const {
     getFamilyMembers,
     updateFamilyMembers,
     deleteFamilyMembers,
+    getMemberDetails
 } = require('../controllers/familyAuthController');
 const { isAuthenticated } = require('../middlewares/auth.middleware');
 const upload = require('../middlewares/multer.js');
@@ -15,6 +16,8 @@ router.post('/', isAuthenticated, upload.single('image'), addFamilyMembers);
 
 // GET route to retrieve family members
 router.get('/', isAuthenticated, getFamilyMembers);
+
+router.get('/:id', isAuthenticated, getMemberDetails);
 
 // PUT route to update a family member (supports image update)
 router.put('/:id', isAuthenticated, upload.single('image'), updateFamilyMembers);

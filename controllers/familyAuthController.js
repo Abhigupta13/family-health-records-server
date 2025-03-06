@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const FamilyMember = require('../models/FamilyMember.model');
 const uploadToCloudinary = require('../utils/cloudinary.js');
+const HealthRecord = require('../models/HealthRecord.model');
 
 const bcrypt = require('bcrypt');
 
@@ -57,6 +58,23 @@ exports.addFamilyMembers = async (req, res) => {
       return res.status(200).json({ success: true, data: familyMembers });
     } catch (error) {
       console.error('Error retrieving family members:', error.message);
+      return res.status(500).json({ success: false, message: 'Internal server error', error: error.message });
+    }
+  };
+  // Get all health records for the authenticated user's family member
+  exports.getMemberDetails = async (req, res) => {
+    try {
+      const userId = req.user.id; // ✅ Get user ID from token
+      const memberId = req.params.id;
+      const healthRecords = await HealthRecord.find({ family_member_id: memberId });
+
+      if (!healthRecords.length) {
+        return res.status(404).json({ success: false, message: 'No health records found' });
+      }
+
+      return res.status(200).json({ success: true, data: healthRecords });
+    } catch (error) {
+      console.error('Error retrieving health records:', error.message);
       return res.status(500).json({ success: false, message: 'Internal server error', error: error.message });
     }
   };
