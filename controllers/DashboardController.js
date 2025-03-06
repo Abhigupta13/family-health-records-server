@@ -1,5 +1,5 @@
-const FamilyMember = require('../models/FamilyMember.model');
-const HealthRecord = require('../models/healthRecord.model');
+const FamilyMember = require('../models/familyMember.model.js');
+const HealthRecord = require('../models/healthRecord.model.js');
 
 exports.getHealthOverview = async (req, res) => {
     try {

@@ -1,8 +1,8 @@
-const { User } = require('../models/user.model');
+const { User } = require('../models/user.model.js');
 const { sendMail } = require('../utils/common');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const FamilyMember = require('../models/FamilyMember.model');
+const FamilyMember = require('../models/familyMember.model.js');
 const uploadToCloudinary = require('../utils/cloudinary.js');
 
 const bcrypt = require('bcrypt');
@@ -11,7 +11,7 @@ const bcrypt = require('bcrypt');
 // Function to add a new family member
 exports.addFamilyMembers = async (req, res) => {
   try {
-    const { name, relation, email } = req.body;
+    const { name, relation, email,age } = req.body;
     const userId = req.user.id; // ✅ Get user ID from authenticated request
 
     if (!name || !relation) {
@@ -31,6 +31,7 @@ exports.addFamilyMembers = async (req, res) => {
       name,
       relation,
       email: email || null,
+      age,
     });
 
     await newMember.save();
