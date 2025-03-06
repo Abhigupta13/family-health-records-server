@@ -3,17 +3,21 @@ const mongoose = require('mongoose');
 const familyMemberSchema = new mongoose.Schema({
   user_id: { 
     type: mongoose.Schema.Types.ObjectId, 
-    ref: 'User', // 🔗 Reference to User model
+    ref: 'User', 
     required: true 
   },
   name: { type: String, required: true },
-  relation: { type: String, required: true },
-  email: { type: String, unique: true, sparse: true }, // ✅ Allow unique emails but ignore `null` values
+  relation: { type: String},
+  email: { type: String, unique: true, sparse: true },
   birth_date: { type: Date },
   gender: { type: String, enum: ['male', 'female', 'other'] },
   contact_info: { type: String },
   address: { type: String },
+  age:{type :String},
+  image: { type: String, default: '' } // ✅ Added image field
 });
 
-const FamilyMember = mongoose.model('FamilyMember', familyMemberSchema);
+// Prevent model from being re-registered if already defined
+const FamilyMember = mongoose.models.FamilyMember || mongoose.model('FamilyMember', familyMemberSchema);
+
 module.exports = FamilyMember;
