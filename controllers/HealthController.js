@@ -17,19 +17,30 @@ exports.addHealthRecord = async (req, res) => {
     if (req.files && req.files.length > 0) {
       for (let file of req.files) {
         const result = await uploadToCloudinary(file.path);
-        imageUrls.push(result.secure_url);
+        if (result.secure_url) {
+          imageUrls.push(result.secure_url); // ✅ Store only valid URLs
+        }
       }
     }
+    
+
+   // Ensure medications is always an array of strings
+const medicationsArray = Array.isArray(medications)
+? medications.filter(med => typeof med === "string" && med.trim() !== "")
+: (typeof medications === "string" && medications.trim() !== "")
+  ? medications.split(",").map(med => med.trim()) // Convert comma-separated string into an array
+  : [];
+
 
     const newHealthRecord = new HealthRecord({
       family_member_id: familyMemberId,
       illness,
-      medications: JSON.parse(medications), // Parse JSON if sending array as string
+      medications: medicationsArray, // ✅ Store only names as an array of strings
       doctor_name,
       doctor_notes,
       visit_date,
       follow_up_date,
-      images: imageUrls, // ✅ Store image URLs
+      images: imageUrls,
     });
 
     await newHealthRecord.save();
@@ -48,6 +59,8 @@ exports.addHealthRecord = async (req, res) => {
     });
   }
 };
+
+
 
 
 exports.getAllHealthRecords = async (req, res) => {
@@ -98,14 +111,28 @@ exports.getHealthRecordsByMember = async (req, res) => {
     // ✅ Get all health records for this family member
     const healthRecords = await HealthRecord.find({ family_member_id: familyMemberId });
 
-    if (healthRecords.length === 0) {
-      return res.status(404).json({ success: false, message: 'No health records found for this member' });
-    }
+
+    // Combine family member details with health records
+    const responseData = {
+      familyMember: {
+        _id: familyMember._id,
+        name: familyMember.name,
+        relation: familyMember.relation,
+        email: familyMember.email,
+        age: familyMember.age,
+        birth_date: familyMember.birth_date,
+        gender: familyMember.gender,
+        contact_info: familyMember.contact_info,
+        address: familyMember.address,
+        image: familyMember.image,
+      },
+      healthRecords: healthRecords,
+    };
 
     return res.status(200).json({
       success: true,
       message: 'Health records retrieved successfully',
-      data: healthRecords,
+      data: responseData,
     });
   } catch (error) {
     console.error('Error retrieving health records:', error.message);
@@ -118,49 +145,66 @@ exports.getHealthRecordsByMember = async (req, res) => {
 };
 
 
+exports.updateHealthRecord = async (req, res) => {
+  try {
+    const { id: familyMemberId, recordId } = req.params;
+    const updates = req.body;
 
-  exports.updateHealthRecord = async (req, res) => {
-    try {
-      const { id: familyMemberId, recordId } = req.params;
-      const updates = req.body;
-  
-      const familyMember = await FamilyMember.findById(familyMemberId);
-      if (!familyMember) {
-        return res.status(404).json({ success: false, message: 'Family member not found' });
-      }
-  
-      const healthRecord = await HealthRecord.findOne({ _id: recordId, family_member_id: familyMemberId });
-      if (!healthRecord) {
-        return res.status(404).json({ success: false, message: 'Health record not found' });
-      }
-  
-      if (req.files && req.files.length > 0) {
-        let imageUrls = [];
-        for (let file of req.files) {
-          const result = await uploadToCloudinary(file.path);
+    const familyMember = await FamilyMember.findById(familyMemberId);
+    if (!familyMember) {
+      return res.status(404).json({ success: false, message: "Family member not found" });
+    }
+
+    const healthRecord = await HealthRecord.findOne({ _id: recordId, family_member_id: familyMemberId });
+    if (!healthRecord) {
+      return res.status(404).json({ success: false, message: "Health record not found" });
+    }
+
+    // Handle Images
+    if (req.files && req.files.length > 0) {
+      let imageUrls = [];
+      console.log(req.file)
+      for (let file of req.files) {
+        const result = await uploadToCloudinary(file.path);
+        if (result && result.secure_url) { // ✅ Ensure result exists and has a secure_url
           imageUrls.push(result.secure_url);
         }
-        updates.images = [...healthRecord.images, ...imageUrls]; // Append new images
       }
-  
-      Object.assign(healthRecord, updates);
-      healthRecord.updated_at = new Date();
-      await healthRecord.save();
-  
-      return res.status(200).json({
-        success: true,
-        message: 'Health record updated successfully',
-        data: healthRecord,
-      });
-    } catch (error) {
-      console.error('Error updating health record:', error.message);
-      return res.status(500).json({
-        success: false,
-        message: 'Internal server error',
-        error: error.message,
-      });
+      if (imageUrls.length > 0) { // ✅ Only update images if valid URLs exist
+        updates.images = [...(Array.isArray(healthRecord.images) ? healthRecord.images : []), ...imageUrls];
+      }
     }
-  };
+    
+
+    // Handle Medications
+    const medicationsArray = Array.isArray(updates.medications)
+      ? updates.medications.filter(med => typeof med === "string" && med.trim() !== "")
+      : (typeof updates.medications === "string" && updates.medications.trim() !== "")
+        ? updates.medications.split(",").map(med => med.trim()) // Convert comma-separated string into an array
+        : [];
+
+    updates.medications = medicationsArray; // Ensure it's always an array
+
+    // Apply updates
+    Object.assign(healthRecord, updates);
+    healthRecord.updated_at = new Date();
+    await healthRecord.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Health record updated successfully",
+      data: healthRecord,
+    });
+  } catch (error) {
+    console.error("Error updating health record:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: error.message,
+    });
+  }
+};
+
   
 
   

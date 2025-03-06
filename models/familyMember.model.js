@@ -8,10 +8,11 @@ const familyMemberSchema = new mongoose.Schema({
   },
   name: { type: String, required: true },
   relation: { type: String},
-  email: { type: String, unique: true, sparse: true },
+  email: { type: String },
   birth_date: { type: Date },
   gender: { type: String, enum: ['male', 'female', 'other'] },
   contact_info: { type: String },
+  last_doctor_visit:{type:Date},
   address: { type: String },
   age:{type :String},
   image: { type: String, default: '' } // ✅ Added image field

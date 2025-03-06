@@ -17,11 +17,7 @@ const healthRecordSchema = new mongoose.Schema({
     type: String,
   },
   medications: [
-    {
-      name: { type: String, required: true },
-      dosage: { type: String, required: true },
-      frequency: { type: String, required: true },
-    },
+    {type:String}
   ],
   visit_date: {
     type: Date,
@@ -30,7 +26,7 @@ const healthRecordSchema = new mongoose.Schema({
   follow_up_date: {
     type: Date,
   },
-  images: [{ type: String }], // ✅ Added array to store image URLs
+  images: [{ type: String }], 
   created_at: {
     type: Date,
     default: Date.now,

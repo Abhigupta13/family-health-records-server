@@ -11,7 +11,7 @@ const router = express.Router();
 // POST route to add a health record
 router.post('/family/:id/records', isAuthenticated, upload.array('images', 5), addHealthRecord);
 router.get('/family/all',isAuthenticated, getAllHealthRecords); 
-router.get('/family/:id', isAuthenticated, getHealthRecordsByMember);
+router.get('/family/:id/records', isAuthenticated, getHealthRecordsByMember);
 router.put('/family/:id/records/:recordId', isAuthenticated,upload.array('images', 5), updateHealthRecord);
 router.delete('/family/:id/records/:recordId', isAuthenticated, deleteHealthRecord);
 

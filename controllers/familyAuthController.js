@@ -12,14 +12,14 @@ const bcrypt = require('bcrypt');
 // Function to add a new family member
 exports.addFamilyMembers = async (req, res) => {
   try {
-    const { name, relation, email,age } = req.body;
+    const { name, relation, age, email } = req.body;
     const userId = req.user.id; // ✅ Get user ID from authenticated request
 
-    if (!name || !relation) {
-      return res.status(400).json({ success: false, message: 'Name and relation are required' });
+    if (!name) {
+      return res.status(400).json({ success: false, message: 'Name is required' });
     }
 
-    // ✅ Prevent duplicate email for different users
+    // Check for duplicate email only if it is provided
     if (email) {
       const existingMember = await FamilyMember.findOne({ email, user_id: userId });
       if (existingMember) {
@@ -27,12 +27,21 @@ exports.addFamilyMembers = async (req, res) => {
       }
     }
 
+    // Handle image upload
+    let imageUrl;
+    if (req.file) {
+      const uploadResult = await uploadToCloudinary(req.file.path);
+      imageUrl = uploadResult.secure_url;
+    }
+
     const newMember = new FamilyMember({
       user_id: userId, // ✅ Associate family member with the user
       name,
       relation,
-      email: email || null,
       age,
+      last_doctor_visit: new Date(),
+      email: email || undefined, // Set email to undefined if not provided
+      image: imageUrl, // Store the image URL in the database
     });
 
     await newMember.save();
@@ -52,9 +61,11 @@ exports.addFamilyMembers = async (req, res) => {
   
       const familyMembers = await FamilyMember.find({ user_id: userId });
   
-      if (!familyMembers.length) {
+      if (!familyMembers) {
+        console.log("dfskj")
         return res.status(404).json({ success: false, message: 'No family members found' });
       }
+      
   
       return res.status(200).json({ success: true, data: familyMembers });
     } catch (error) {
