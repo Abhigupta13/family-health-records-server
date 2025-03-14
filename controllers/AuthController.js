@@ -12,6 +12,9 @@ const validRoles = ['Admin', 'Doctor', 'User']; // ✅ Valid roles
 exports.getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password -salt');
+    const notificationPreferences = await NotificationPreferences.findOne({
+      user_id: req.user.id
+    });
 
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
@@ -22,9 +25,17 @@ exports.getUserProfile = async (req, res) => {
       data: {
         name: user.name,
         email: user.email,
-        role: user.role, // Include role in the response
+        role: user.role,
         image: user.image,
         created_at: user.createdAt,
+        notificationPreferences: {
+          medication_reminders: notificationPreferences.medication_reminders,
+        health_alerts: notificationPreferences.health_alerts,
+        email_notifications: notificationPreferences.email_notifications,
+        sms_notifications: notificationPreferences.sms_notifications,
+        app_notifications: notificationPreferences.app_notifications,
+        updated_at: notificationPreferences.updated_at
+        }
       },
     });
   } catch (err) {

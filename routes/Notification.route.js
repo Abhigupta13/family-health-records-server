@@ -1,12 +1,13 @@
 const express = require('express');
 const { getNotificationsWithPreferences, createNotification,markNotificationAsRead,updateNotificationPreferences, } = require('../controllers/NotificationController');
 const { isAuthenticated } = require('../middlewares/auth.middleware');
+const NotificationPreferences = require('../models/notificationPreferences.model');
 
 const router = express.Router();
 
 
 // Update notification preferences
-router.put('/preferences', isAuthenticated, updateNotificationPreferences);
+router.put('/update-preferences', isAuthenticated, updateNotificationPreferences);
 
 
 // GET route for notification preferences and notifications

@@ -6,17 +6,25 @@ const notificationPreferencesSchema = new mongoose.Schema({
     ref: 'User', // Reference to the User model
     required: true,
   },
+  medication_reminders: {
+    type: Boolean,
+    default: false, // Enable Medication Reminders
+  },
+  health_alerts: {
+    type: Boolean,
+    default: false, // Receive Health Alerts
+  },
   email_notifications: {
     type: Boolean,
-    default: true, // Enable email notifications by default
+    default: true, // Email Notifications
   },
   sms_notifications: {
     type: Boolean,
-    default: true, // Enable SMS notifications by default
+    default: true, // SMS Notifications
   },
   app_notifications: {
     type: Boolean,
-    default: true, // Enable app notifications by default
+    default: true, // In-App Notifications
   },
   updated_at: {
     type: Date,
