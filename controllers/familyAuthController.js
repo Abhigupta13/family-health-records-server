@@ -13,14 +13,14 @@ const bcrypt = require('bcrypt');
 exports.addFamilyMembers = async (req, res) => {
   try {
     const { name, relation, age, email } = req.body;
-    const userId = req.user.id; // ✅ Get user ID from authenticated request
+    const userId = req.user.id; // Get user ID from authenticated request
 
     if (!name) {
       return res.status(400).json({ success: false, message: 'Name is required' });
     }
 
     // Check for duplicate email only if it is provided
-    if (email) {
+    if (email !== undefined) {
       const existingMember = await FamilyMember.findOne({ email, user_id: userId });
       if (existingMember) {
         return res.status(400).json({ success: false, message: 'Email already exists for this user' });
@@ -35,7 +35,7 @@ exports.addFamilyMembers = async (req, res) => {
     }
 
     const newMember = new FamilyMember({
-      user_id: userId, // ✅ Associate family member with the user
+      user_id: userId, // Associate family member with the user
       name,
       relation,
       age,
