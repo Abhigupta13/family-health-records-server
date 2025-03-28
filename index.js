@@ -1,8 +1,10 @@
 require('dotenv').config();
 const express = require('express');
+const morgan = require('morgan'); // Import morgan for logging
 const app = express();
 const cors = require('cors');
 const connectDB = require('./config/server');
+
 // Static file serving for uploaded files
 app.use('/uploads', express.static('uploads')); 
 
@@ -28,20 +30,20 @@ app.use(
   })
 );
 
+// Use morgan for logging requests
+app.use(morgan('dev')); // Changed to 'dev' for less verbose logging
+
 // Routes
 app.use('/auth', authRouter);
 app.use('/family', familyRouter);
-app.use('/health',healthRecordRoutes);
+app.use('/health', healthRecordRoutes);
 app.use('/document', documentRoutes);
-app.use('/', dashboardRoutes);  //in dashboardRoutes i write the code of  health timeline of a family member
+app.use('/', dashboardRoutes);  //in dashboardRoutes i write the code of health timeline of a family member
 app.use('/emergency', emergencyAccessRoutes);
 app.use('/notifications', notificationRoutes);
 app.use('/api', healthUpdateRoutes);
 app.use('/add', addressRoutes);
 app.use('/ocr', ocrRoutes);
-
-
-
 
 app.listen(process.env.PORT || 8080, async () => {
   connectDB();

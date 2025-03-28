@@ -13,7 +13,6 @@ exports.isAuthenticated = async (req, res, next) => {
     // Verify the token
     const secretKey = process.env.JWT_SECRET_KEY; // Replace with your actual secret key
     const decoded = jwt.verify(token, secretKey);
-console.log(decoded);
     // Find the user in the database (optional, based on your needs)
     const user = await User.findById(decoded.id);
     if (!user) {

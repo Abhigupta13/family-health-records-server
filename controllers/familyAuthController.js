@@ -62,7 +62,6 @@ exports.addFamilyMembers = async (req, res) => {
       const familyMembers = await FamilyMember.find({ user_id: userId });
   
       if (!familyMembers) {
-        console.log("dfskj")
         return res.status(404).json({ success: false, message: 'No family members found' });
       }
       
@@ -115,38 +114,6 @@ exports.addFamilyMembers = async (req, res) => {
     }
   };
   
-  
-  // Update Family Member details
-  exports.updateFamilyMembers = async (req, res) => {
-    try {
-      // Extract family member ID from the URL parameter
-      const familyMemberId = req.params.id;
-  
-      // Extract the updated data from the request body
-      const updatedData = req.body;
-  
-      // Find the family member by ID
-      const familyMember = await FamilyMember.findById(familyMemberId);
-      if (!familyMember) {
-        return res.status(404).json({ message: 'Family member not found' });
-      }
-  
-      // Update all attributes in the family member object with the new data
-      Object.assign(familyMember, updatedData);
-  
-      // Save the updated family member to the database
-      await familyMember.save();
-  
-      // Return the updated family member details
-      res.status(200).json({
-        message: 'Family member updated successfully',
-        data: familyMember
-      });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: 'Error updating family member', error: err.message });
-    }
-  };
   
   // Delete Family Member
   exports.deleteFamilyMembers = async (req, res) => {
