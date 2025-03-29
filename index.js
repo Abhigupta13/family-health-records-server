@@ -34,16 +34,16 @@ app.use(
 app.use(morgan('dev')); // Changed to 'dev' for less verbose logging
 
 // Routes
-app.use('/auth', authRouter);
-app.use('/family', familyRouter);
-app.use('/health', healthRecordRoutes);
-app.use('/document', documentRoutes);
-app.use('/', dashboardRoutes);  //in dashboardRoutes i write the code of health timeline of a family member
-app.use('/emergency', emergencyAccessRoutes);
-app.use('/notifications', notificationRoutes);
-app.use('/api', healthUpdateRoutes);
-app.use('/add', addressRoutes);
-app.use('/ocr', ocrRoutes);
+app.use('/api/auth', authRouter);
+app.use('/api/family', familyRouter);
+app.use('/api/health', healthRecordRoutes);
+app.use('/api/document', documentRoutes);
+app.use('/api/', dashboardRoutes);  //in dashboardRoutes i write the code of health timeline of a family member
+app.use('/api/emergency', emergencyAccessRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/updates', healthUpdateRoutes);
+app.use('/api/add', addressRoutes);
+app.use('/api/ocr', ocrRoutes);
 
 app.listen(process.env.PORT || 8080, async () => {
   connectDB();
