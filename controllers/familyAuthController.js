@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const FamilyMember = require('../models/familyMember.model.js');
 const uploadToCloudinary = require('../utils/cloudinary.js');
-const HealthRecord = require('../models/HealthRecord.model');
 
 const bcrypt = require('bcrypt');
 
