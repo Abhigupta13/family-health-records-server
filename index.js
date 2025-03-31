@@ -34,6 +34,9 @@ app.use(
 app.use(morgan('dev')); // Changed to 'dev' for less verbose logging
 
 // Routes
+app.get('/',(req,res)=>{
+  res.send("Welcome to API server for Family health management Service")
+})
 app.use('/api/auth', authRouter);
 app.use('/api/family', familyRouter);
 app.use('/api/health', healthRecordRoutes);
