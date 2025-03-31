@@ -1,5 +1,5 @@
 const EmergencyAccess = require('../models/emergencyAccess.model');
-const FamilyMember = require('../models/FamilyMember.model');
+const FamilyMember = require('../models/familyMember.model');
 const crypto = require('crypto');
 const HealthRecord = require('../models/healthRecord.model');
 

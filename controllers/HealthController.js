@@ -1,5 +1,5 @@
 const HealthRecord = require('../models/healthRecord.model');
-const FamilyMember = require('../models/FamilyMember.model');
+const FamilyMember = require('../models/familyMember.model');
 
 const uploadToCloudinary = require('../utils/cloudinary.js');
 
