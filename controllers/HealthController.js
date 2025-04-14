@@ -44,6 +44,7 @@ const medicationsArray = Array.isArray(medications)
     });
 
     await newHealthRecord.save();
+    await FamilyMember.updateOne({ _id: familyMemberId }, { last_doctor_visit: visit_date });
 
     return res.status(201).json({
       success: true,
@@ -108,9 +109,8 @@ exports.getHealthRecordsByMember = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Family member not found' });
     }
 
-    // ✅ Get all health records for this family member
-    const healthRecords = await HealthRecord.find({ family_member_id: familyMemberId });
-
+    // ✅ Get all health records for this family member and order by date
+    const healthRecords = await HealthRecord.find({ family_member_id: familyMemberId }).sort({ visit_date: -1 });
 
     // Combine family member details with health records
     const responseData = {
@@ -121,6 +121,7 @@ exports.getHealthRecordsByMember = async (req, res) => {
         email: familyMember.email,
         age: familyMember.age,
         birth_date: familyMember.birth_date,
+        last_doctor_visit:familyMember.last_doctor_visit,
         gender: familyMember.gender,
         contact_info: familyMember.contact_info,
         address: familyMember.address,
