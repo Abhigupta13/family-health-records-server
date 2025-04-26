@@ -18,24 +18,15 @@ exports.addHealthRecord = async (req, res) => {
       for (let file of req.files) {
         const result = await uploadToCloudinary(file.path);
         if (result.secure_url) {
-          imageUrls.push(result.secure_url); // ✅ Store only valid URLs
+          imageUrls.push(result.secure_url);
         }
       }
     }
-    
-
-   // Ensure medications is always an array of strings
-const medicationsArray = Array.isArray(medications)
-? medications.filter(med => typeof med === "string" && med.trim() !== "")
-: (typeof medications === "string" && medications.trim() !== "")
-  ? medications.split(",").map(med => med.trim()) // Convert comma-separated string into an array
-  : [];
-
 
     const newHealthRecord = new HealthRecord({
       family_member_id: familyMemberId,
       illness,
-      medications: medicationsArray, // ✅ Store only names as an array of strings
+      medications: medications || "", // Store as string
       doctor_name,
       doctor_notes,
       visit_date,
@@ -60,9 +51,6 @@ const medicationsArray = Array.isArray(medications)
     });
   }
 };
-
-
-
 
 exports.getAllHealthRecords = async (req, res) => {
   try {
@@ -145,56 +133,163 @@ exports.getHealthRecordsByMember = async (req, res) => {
   }
 };
 
-
 exports.updateHealthRecord = async (req, res) => {
+  console.log("update health record")
   try {
     const { id: familyMemberId, recordId } = req.params;
-    const updates = req.body;
+    const {
+      illness,
+      doctor_name,
+      doctor_notes,
+      medications,
+      blood_pressure,
+      heart_rate,
+      visit_date,
+      follow_up_date,
+      existingImages,
+      imagesToDelete,
+    } = req.body;
 
+    // Check if family member exists
     const familyMember = await FamilyMember.findById(familyMemberId);
     if (!familyMember) {
       return res.status(404).json({ success: false, message: "Family member not found" });
     }
 
+    // Get current health record
     const healthRecord = await HealthRecord.findOne({ _id: recordId, family_member_id: familyMemberId });
     if (!healthRecord) {
       return res.status(404).json({ success: false, message: "Health record not found" });
     }
 
-    // Handle Images
+    // Parse blood pressure
+    let parsedBloodPressure = null;
+    if (blood_pressure) {
+      try {
+        let bp = blood_pressure;
+        if (typeof bp === 'string') {
+          bp = JSON.parse(bp);
+        }
+        if (bp && typeof bp === 'object') {
+          parsedBloodPressure = {
+            systolic: bp.systolic ? Number(bp.systolic) : null,
+            diastolic: bp.diastolic ? Number(bp.diastolic) : null
+          };
+        }
+      } catch (e) {
+        console.error('Error parsing blood pressure:', e);
+      }
+    }
+
+    // Parse existing images
+    let parsedExistingImages = [];
+    if (existingImages) {
+      try {
+        let images = existingImages;
+        if (typeof images === 'string') {
+          try {
+            images = JSON.parse(images);
+          } catch (e) {
+            images = images
+              .replace(/[\[\]"]/g, '')
+              .split(',')
+              .map(url => url.trim())
+              .filter(url => url.length > 0);
+          }
+        }
+        if (Array.isArray(images)) {
+          parsedExistingImages = images.filter(url => typeof url === 'string' && url.startsWith('http'));
+        }
+      } catch (e) {
+        console.error('Error parsing existing images:', e);
+      }
+    }
+
+    // Parse images to delete
+    let parsedImagesToDelete = [];
+    if (imagesToDelete) {
+      try {
+        let images = imagesToDelete;
+        if (typeof images === 'string') {
+          try {
+            images = JSON.parse(images);
+          } catch (e) {
+            images = images
+              .replace(/[\[\]"]/g, '')
+              .split(',')
+              .map(url => url.trim())
+              .filter(url => url.length > 0);
+          }
+        }
+        if (Array.isArray(images)) {
+          parsedImagesToDelete = images.filter(url => typeof url === 'string' && url.startsWith('http'));
+        }
+      } catch (e) {
+        console.error('Error parsing images to delete:', e);
+      }
+    }
+
+    // Handle new image uploads
+    let imageUrls = [];
     if (req.files && req.files.length > 0) {
-      let imageUrls = [];
-      console.log(req.file)
       for (let file of req.files) {
         const result = await uploadToCloudinary(file.path);
-        if (result && result.secure_url) { // ✅ Ensure result exists and has a secure_url
+        if (result.secure_url) {
           imageUrls.push(result.secure_url);
         }
       }
-      if (imageUrls.length > 0) { // ✅ Only update images if valid URLs exist
-        updates.images = [...(Array.isArray(healthRecord.images) ? healthRecord.images : []), ...imageUrls];
+    }
+
+    // Start with existing images
+    let finalImages = parsedExistingImages;
+
+    // Remove images that are marked for deletion
+    finalImages = finalImages.filter(img => !parsedImagesToDelete.includes(img));
+
+    // Add new images
+    finalImages = [...finalImages, ...imageUrls];
+
+    // Validate heart rate
+    let validatedHeartRate = null;
+    if (heart_rate !== undefined && heart_rate !== null) {
+      const parsedHeartRate = Number(heart_rate);
+      if (!isNaN(parsedHeartRate)) {
+        validatedHeartRate = parsedHeartRate;
       }
     }
-    
 
-    // Handle Medications
-    const medicationsArray = Array.isArray(updates.medications)
-      ? updates.medications.filter(med => typeof med === "string" && med.trim() !== "")
-      : (typeof updates.medications === "string" && updates.medications.trim() !== "")
-        ? updates.medications.split(",").map(med => med.trim()) // Convert comma-separated string into an array
-        : [];
+    // Prepare update data
+    const updateData = {
+      illness,
+      doctor_name,
+      doctor_notes,
+      medications: medications || "", // Store as string
+      blood_pressure: parsedBloodPressure,
+      heart_rate: validatedHeartRate,
+      visit_date: visit_date ? new Date(visit_date) : undefined,
+      follow_up_date: follow_up_date ? new Date(follow_up_date) : undefined,
+      images: finalImages,
+      // updated_at: new Date(),
+    };
 
-    updates.medications = medicationsArray; // Ensure it's always an array
+    // Remove undefined values
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key] === undefined) {
+        delete updateData[key];
+      }
+    });
 
-    // Apply updates
-    Object.assign(healthRecord, updates);
-    healthRecord.updated_at = new Date();
-    await healthRecord.save();
+    // Update the health record
+    const updatedRecord = await HealthRecord.findByIdAndUpdate(
+      recordId,
+      updateData,
+      { new: true }
+    );
 
     return res.status(200).json({
       success: true,
       message: "Health record updated successfully",
-      data: healthRecord,
+      data: updatedRecord,
     });
   } catch (error) {
     console.error("Error updating health record:", error.message);
@@ -206,9 +301,6 @@ exports.updateHealthRecord = async (req, res) => {
   }
 };
 
-  
-
-  
 // Delete Health Record
 exports.deleteHealthRecord = async (req, res) => {
     try {
