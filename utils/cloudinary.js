@@ -10,9 +10,10 @@ cloudinary.config({
 });
 
 const uploadToCloudinary = async (filePath) => {
+  console.log("Uploading to Cloudinary");
   try {
     const result = await cloudinary.uploader.upload(filePath, {
-      folder: 'family_members', // Cloudinary folder name
+      folder: 'health_records', // Cloudinary folder name
     });
     return result;
   } catch (error) {
@@ -21,4 +22,42 @@ const uploadToCloudinary = async (filePath) => {
   }
 };
 
-module.exports = uploadToCloudinary;
+const uploadPDFToCloudinary = async (buffer, filename) => {
+  console.log('Starting PDF upload to Cloudinary');
+  try {
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: 'raw',
+          folder: 'health_records',
+          format: 'pdf',
+          public_id: filename,
+          type: 'upload',
+          access_mode: 'public',
+          use_filename: true,
+          unique_filename: true,
+          overwrite: true
+        },
+        (error, result) => {
+          if (error) {
+            console.error('Cloudinary upload error:', error);
+            reject(error);
+          } else {
+            console.log('Cloudinary upload successful:', result);
+            resolve(result);
+          }
+        }
+      );
+      uploadStream.end(buffer);
+    });
+  } catch (error) {
+    console.error('Cloudinary PDF upload error:', error);
+    throw new Error('PDF upload failed');
+  }
+};
+
+module.exports = {
+  uploadToCloudinary,
+  uploadPDFToCloudinary,
+  cloudinary
+};
