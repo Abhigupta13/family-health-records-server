@@ -24,46 +24,8 @@ const uploadToCloudinary = async (filePath) => {
   }
 };
 
-const uploadPDFToCloudinary = async (buffer, filename) => {
-  console.log('Starting PDF upload to Cloudinary');
-  try {
-    return new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          resource_type: 'raw',
-          folder: 'health_records',
-          format: 'pdf',
-          public_id: filename,
-          type: 'upload',
-          access_mode: 'public',
-          use_filename: true,
-          unique_filename: true,
-          overwrite: true,
-          transformation: [
-            { flags: 'attachment' }
-          ],
-          content_type: 'application/pdf'
-        },
-        (error, result) => {
-          if (error) {
-            console.error('Cloudinary upload error:', error);
-            reject(error);
-          } else {
-            console.log('Cloudinary upload successful:', result);
-            resolve(result);
-          }
-        }
-      );
-      uploadStream.end(buffer);
-    });
-  } catch (error) {
-    console.error('Cloudinary PDF upload error:', error);
-    throw new Error('PDF upload failed');
-  }
-};
 
 module.exports = {
   uploadToCloudinary,
-  uploadPDFToCloudinary,
   cloudinary
 };
