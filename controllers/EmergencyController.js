@@ -2,9 +2,11 @@ const EmergencyAccess = require('../models/emergencyAccess.model');
 const FamilyMember = require('../models/familyMember.model');
 const crypto = require('crypto');
 const HealthRecord = require('../models/healthRecord.model');
-
+const PDFDocument = require('pdfkit');
+const { uploadPDFToCloudinary } = require('../utils/cloudinary');
 
 const mongoose = require('mongoose');
+const { uploadPDFToS3 } = require('../utils/s3');
 
 exports.generateEmergencyAccessLink = async (req, res) => {
     try {
@@ -108,4 +110,103 @@ exports.generateEmergencyAccessLink = async (req, res) => {
       });
     }
   };
+  
+  exports.generateEmergencyPDFURL = async (req, res) => {
+    try {
+      const { memberId } = req.params;
+      
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: 'PDF file is required'
+        });
+      }
+
+      const filename = `health_record_${memberId}_${Date.now()}.pdf`;
+      const pdfBuffer = req.file.buffer;
+
+      // Upload to S3 and get signed URL
+      const result = await uploadPDFToS3(pdfBuffer, filename);
+
+      if (!result || !result.SignedUrl) {
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to upload PDF to S3'
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: 'PDF uploaded successfully',
+        data: {
+          pdfUrl: result.SignedUrl,
+          contentType: 'application/pdf'
+        }
+      });
+    } catch (error) {
+      console.error('Error uploading PDF:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Internal server error',
+        error: error.message
+      });
+    }
+  };
+
+exports.uploadPDFToCloudinary = async (req, res) => {
+  try {
+    const { pdfBase64, memberId } = req.body;
+
+    if (!pdfBase64 || !memberId) {
+      return res.status(400).json({
+        success: false,
+        message: 'PDF data and member ID are required'
+      });
+    }
+
+    // Remove the data URL prefix
+    const base64Data = pdfBase64.replace(/^data:application\/pdf;base64,/, '');
+
+    // Convert base64 to buffer
+    const pdfBuffer = Buffer.from(base64Data, 'base64');
+
+    // Upload to Cloudinary
+    const cloudinary = require('../utils/cloudinary');
+    const result = await cloudinary.uploader.upload_stream(
+      {
+        resource_type: 'raw',
+        folder: 'health_records',
+        format: 'pdf',
+        public_id: `health_record_${memberId}_${Date.now()}`
+      },
+      async (error, result) => {
+        if (error) {
+          console.error('Cloudinary upload error:', error);
+          return res.status(500).json({
+            success: false,
+            message: 'Failed to upload PDF to Cloudinary',
+            error: error.message
+          });
+        }
+
+        // Return the Cloudinary URL
+        return res.status(200).json({
+          success: true,
+          message: 'PDF uploaded successfully',
+          data: {
+            pdfUrl: result.secure_url
+          }
+        });
+      }
+    ).end(pdfBuffer);
+
+  } catch (error) {
+    console.error('Error uploading PDF:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: error.message
+    });
+  }
+};
   
