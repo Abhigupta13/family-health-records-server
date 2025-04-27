@@ -11,8 +11,10 @@ cloudinary.config({
 
 const uploadToCloudinary = async (filePath) => {
   console.log("Uploading to Cloudinary");
+  console.log("Uploading to Cloudinary");
   try {
     const result = await cloudinary.uploader.upload(filePath, {
+      folder: 'health_records', // Cloudinary folder name
       folder: 'health_records', // Cloudinary folder name
     });
     return result;
