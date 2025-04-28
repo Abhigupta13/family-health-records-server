@@ -21,7 +21,7 @@ exports.getHealthOverview = async (req, res) => {
               { follow_up_date: { $gte: new Date() } },
               { visit_date: { $lte: new Date() } },
             ],
-          }).select('illness medications doctor_name doctor_notes visit_date follow_up_date');
+          }).select('diagnosis medications doctor_name doctor_notes visit_date follow_up_date');
   
           return {
             familyMember: {
@@ -64,7 +64,7 @@ exports.getHealthTimeline = async (req, res) => {
       // Fetch all health records for the family member
       const healthTimeline = await HealthRecord.find({ family_member_id: id })
         .sort({ visit_date: 1 }) // Sort by visit_date in ascending order
-        .select('illness medications doctor_name doctor_notes visit_date follow_up_date');
+        .select('diagnosis medications doctor_name doctor_notes visit_date follow_up_date');
   
       if (healthTimeline.length === 0) {
         return res.status(404).json({ success: false, message: 'No health records found for this family member' });

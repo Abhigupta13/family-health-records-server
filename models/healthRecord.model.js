@@ -19,7 +19,7 @@ const healthRecordSchema = new mongoose.Schema({
     ref: 'FamilyMember',
     required: true,
   },
-  illness: {
+  diagnosis: {
     type: String,
     required: true,
   },
@@ -35,7 +35,6 @@ const healthRecordSchema = new mongoose.Schema({
   },
   blood_pressure: {
     type: bloodPressureSchema,
-    default: null
   },
   heart_rate: {
     type: Number,
@@ -59,7 +58,7 @@ const healthRecordSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-});
+}, { timestamps: true });
 
 const HealthRecord = mongoose.models.HealthRecord || mongoose.model('HealthRecord', healthRecordSchema);
 

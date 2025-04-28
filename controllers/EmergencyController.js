@@ -87,7 +87,7 @@ exports.generateEmergencyAccessLink = async (req, res) => {
   
       // Fetch the health records associated with the family member
       const healthRecords = await HealthRecord.find({ family_member_id: id })
-        .select('illness medications doctor_name doctor_notes visit_date follow_up_date');
+        .select('diagnosis medications doctor_name doctor_notes visit_date follow_up_date');
   
       return res.status(200).json({
         success: true,

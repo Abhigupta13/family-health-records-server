@@ -3,7 +3,7 @@ const { sendMail } = require('../utils/common');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const FamilyMember = require('../models/familyMember.model.js');
-const uploadToCloudinary = require('../utils/cloudinary.js');
+const { uploadProfileImageToS3 } = require('../utils/s3');
 
 const bcrypt = require('bcrypt');
 
@@ -29,8 +29,9 @@ exports.addFamilyMembers = async (req, res) => {
     // Handle image upload
     let imageUrl;
     if (req.file) {
-      const uploadResult = await uploadToCloudinary(req.file.path);
-      imageUrl = uploadResult.secure_url;
+      const filename = `profile_${Date.now()}_${req.file.originalname}`;
+      const result = await uploadProfileImageToS3(req.file.buffer, filename);
+      imageUrl = result.SignedUrl;
     }
 
     const newMember = new FamilyMember({
@@ -96,8 +97,9 @@ exports.addFamilyMembers = async (req, res) => {
       const updatedData = req.body;
       
       if (req.file) {
-        const uploadResult = await uploadToCloudinary(req.file.path);
-        updatedData.image = uploadResult.secure_url;
+        const filename = `profile_${Date.now()}_${req.file.originalname}`;
+        const result = await uploadProfileImageToS3(req.file.buffer, filename);
+        updatedData.image = result.SignedUrl;
       }
   
       const familyMember = await FamilyMember.findByIdAndUpdate(familyMemberId, updatedData, { new: true });

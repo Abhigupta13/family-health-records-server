@@ -1,0 +1,189 @@
+[
+    {
+      "_id": { "$oid": "680eb81ad6c1dd2acb333301" },
+      "family_member_id": { "$oid": "67e06a6b5945baaaa5cfd99b" },
+      "diagnosis": "Hypertension",
+      "doctor_name": "Dr. Smith",
+      "doctor_notes": "Monitor blood pressure daily.",
+      "medications": "Amlodipine 5mg daily",
+      "visit_date": { "$date": "2025-04-01T00:00:00Z" },
+      "follow_up_date": { "$date": "2025-05-01T00:00:00Z" },
+      "images": [
+        "https://res.cloudinary.com/demo/image/upload/sample.jpg"
+      ],
+      "created_at": { "$date": "2025-04-27T04:00:00Z" },
+      "updated_at": { "$date": "2025-04-27T04:00:00Z" },
+      "blood_pressure": {
+        "systolic": 140,
+        "diastolic": 90
+      },
+      "heart_rate": 78
+    },
+    {
+      "_id": { "$oid": "680eb81ad6c1dd2acb333302" },
+      "family_member_id": { "$oid": "67e06a6b5945baaaa5cfd99b" },
+      "diagnosis": "Diabetes",
+      "doctor_name": "Dr. Johnson",
+      "doctor_notes": "Monitor blood sugar levels.",
+      "medications": "Metformin 500mg twice daily",
+      "visit_date": { "$date": "2025-04-02T00:00:00Z" },
+      "follow_up_date": { "$date": "2025-05-02T00:00:00Z" },
+      "images": [],
+      "created_at": { "$date": "2025-04-27T04:10:00Z" },
+      "updated_at": { "$date": "2025-04-27T04:10:00Z" },
+      "blood_pressure": {
+        "systolic": 135,
+        "diastolic": 85
+      },
+      "heart_rate": 80
+    },
+    {
+      "_id": { "$oid": "680eb81ad6c1dd2acb333303" },
+      "family_member_id": { "$oid": "67e06a6b5945baaaa5cfd99b" },
+      "diagnosis": "Asthma",
+      "doctor_name": "Dr. Lee",
+      "doctor_notes": "Use inhaler as prescribed.",
+      "medications": "Salbutamol inhaler",
+      "visit_date": { "$date": "2025-04-03T00:00:00Z" },
+      "follow_up_date": { "$date": "2025-05-03T00:00:00Z" },
+      "images": [
+        "https://res.cloudinary.com/demo/image/upload/asthma.jpg"
+      ],
+      "created_at": { "$date": "2025-04-27T04:20:00Z" },
+      "updated_at": { "$date": "2025-04-27T04:20:00Z" },
+      "blood_pressure": {
+        "systolic": 125,
+        "diastolic": 78
+      },
+      "heart_rate": 86
+    },
+    {
+      "_id": { "$oid": "680eb81ad6c1dd2acb333304" },
+      "family_member_id": { "$oid": "67e06a6b5945baaaa5cfd99b" },
+      "diagnosis": "Anemia",
+      "doctor_name": "Dr. Brown",
+      "doctor_notes": "Iron supplements advised.",
+      "medications": "Ferrous sulfate daily",
+      "visit_date": { "$date": "2025-04-04T00:00:00Z" },
+      "follow_up_date": { "$date": "2025-05-04T00:00:00Z" },
+      "images": [],
+      "created_at": { "$date": "2025-04-27T04:30:00Z" },
+      "updated_at": { "$date": "2025-04-27T04:30:00Z" },
+      "blood_pressure": {
+        "systolic": 115,
+        "diastolic": 70
+      },
+      "heart_rate": 90
+    },
+    {
+      "_id": { "$oid": "680eb81ad6c1dd2acb333305" },
+      "family_member_id": { "$oid": "67e06a6b5945baaaa5cfd99b" },
+      "diagnosis": "Routine Checkup",
+      "doctor_name": "Dr. Wilson",
+      "doctor_notes": "All parameters normal.",
+      "medications": "",
+      "visit_date": { "$date": "2025-04-05T00:00:00Z" },
+      "follow_up_date": null,
+      "images": [],
+      "created_at": { "$date": "2025-04-27T04:40:00Z" },
+      "updated_at": { "$date": "2025-04-27T04:40:00Z" },
+      "blood_pressure": {
+        "systolic": 120,
+        "diastolic": 80
+      },
+      "heart_rate": 72
+    },
+    {
+      "_id": { "$oid": "680eb81ad6c1dd2acb333306" },
+      "family_member_id": { "$oid": "67e06a6b5945baaaa5cfd99b" },
+      "diagnosis": "Migraine",
+      "doctor_name": "Dr. Adams",
+      "doctor_notes": "Prescribed painkillers.",
+      "medications": "Sumatriptan as needed",
+      "visit_date": { "$date": "2025-04-06T00:00:00Z" },
+      "follow_up_date": null,
+      "images": [],
+      "created_at": { "$date": "2025-04-27T04:50:00Z" },
+      "updated_at": { "$date": "2025-04-27T04:50:00Z" },
+      "blood_pressure": {
+        "systolic": 118,
+        "diastolic": 76
+      },
+      "heart_rate": 74
+    },
+    {
+      "_id": { "$oid": "680eb81ad6c1dd2acb333307" },
+      "family_member_id": { "$oid": "67e06a6b5945baaaa5cfd99b" },
+      "diagnosis": "High Cholesterol",
+      "doctor_name": "Dr. Green",
+      "doctor_notes": "Statins prescribed.",
+      "medications": "Atorvastatin 10mg daily",
+      "visit_date": { "$date": "2025-04-07T00:00:00Z" },
+      "follow_up_date": { "$date": "2025-05-07T00:00:00Z" },
+      "images": [
+        "https://res.cloudinary.com/demo/image/upload/cholesterol.jpg"
+      ],
+      "created_at": { "$date": "2025-04-27T05:00:00Z" },
+      "updated_at": { "$date": "2025-04-27T05:00:00Z" },
+      "blood_pressure": {
+        "systolic": 132,
+        "diastolic": 84
+      },
+      "heart_rate": 78
+    },
+    {
+      "_id": { "$oid": "680eb81ad6c1dd2acb333308" },
+      "family_member_id": { "$oid": "67e06a6b5945baaaa5cfd99b" },
+      "diagnosis": "Allergy",
+      "doctor_name": "Dr. Garcia",
+      "doctor_notes": "Antihistamines prescribed.",
+      "medications": "Cetirizine 10mg daily",
+      "visit_date": { "$date": "2025-04-08T00:00:00Z" },
+      "follow_up_date": null,
+      "images": [],
+      "created_at": { "$date": "2025-04-27T05:10:00Z" },
+      "updated_at": { "$date": "2025-04-27T05:10:00Z" },
+      "blood_pressure": {
+        "systolic": 116,
+        "diastolic": 78
+      },
+      "heart_rate": 70
+    },
+    {
+      "_id": { "$oid": "680eb81ad6c1dd2acb333309" },
+      "family_member_id": { "$oid": "67e06a6b5945baaaa5cfd99b" },
+      "diagnosis": "Post Surgery Followup",
+      "doctor_name": "Dr. Martinez",
+      "doctor_notes": "Healing well.",
+      "medications": "Painkillers as needed",
+      "visit_date": { "$date": "2025-04-09T00:00:00Z" },
+      "follow_up_date": { "$date": "2025-04-23T00:00:00Z" },
+      "images": [],
+      "created_at": { "$date": "2025-04-27T05:20:00Z" },
+      "updated_at": { "$date": "2025-04-27T05:20:00Z" },
+      "blood_pressure": {
+        "systolic": 126,
+        "diastolic": 82
+      },
+      "heart_rate": 80
+    },
+    {
+      "_id": { "$oid": "680eb81ad6c1dd2acb33330a" },
+      "family_member_id": { "$oid": "67e06a6b5945baaaa5cfd99b" },
+      "diagnosis": "Depression",
+      "doctor_name": "Dr. Taylor",
+      "doctor_notes": "Antidepressants prescribed.",
+      "medications": "Sertraline 50mg daily",
+      "visit_date": { "$date": "2025-04-10T00:00:00Z" },
+      "follow_up_date": { "$date": "2025-05-10T00:00:00Z" },
+      "images": [],
+      "created_at": { "$date": "2025-04-27T05:30:00Z" },
+      "updated_at": { "$date": "2025-04-27T05:30:00Z" },
+      "blood_pressure": {
+        "systolic": 122,
+        "diastolic": 80
+      },
+      "heart_rate": 72
+    }
+  ]
+  

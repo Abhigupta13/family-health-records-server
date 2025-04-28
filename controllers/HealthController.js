@@ -1,12 +1,13 @@
 const HealthRecord = require('../models/healthRecord.model');
 const FamilyMember = require('../models/familyMember.model');
+const { uploadHealthRecordImageToS3 } = require('../utils/s3.js');
 
 const {uploadToCloudinary} = require('../utils/cloudinary.js');
 
 exports.addHealthRecord = async (req, res) => {
   try {
     const familyMemberId = req.params.id;
-    const { illness, medications, doctor_name, doctor_notes, visit_date, follow_up_date } = req.body;
+    const { diagnosis, medications, doctor_name, doctor_notes, visit_date, follow_up_date } = req.body;
 
     const familyMember = await FamilyMember.findById(familyMemberId);
     if (!familyMember) {
@@ -17,7 +18,7 @@ exports.addHealthRecord = async (req, res) => {
     if (req.files && req.files.length > 0) {
       for (let file of req.files) {
         console.log("Uploading to Cloudinary");
-        const result = await uploadToCloudinary(file.path);
+        const result = await uploadToCloudinary(file);
         if (result.secure_url) {
           imageUrls.push(result.secure_url);
         }
@@ -26,7 +27,7 @@ exports.addHealthRecord = async (req, res) => {
 
     const newHealthRecord = new HealthRecord({
       family_member_id: familyMemberId,
-      illness,
+      diagnosis,
       medications: medications || "", // Store as string
       doctor_name,
       doctor_notes,
@@ -102,6 +103,7 @@ exports.getHealthRecordsByMember = async (req, res) => {
     const healthRecords = await HealthRecord.find({ family_member_id: familyMemberId }).sort({ visit_date: -1 });
 
     // Combine family member details with health records
+    console.log(healthRecords[0])
     const responseData = {
       familyMember: {
         _id: familyMember._id,
@@ -139,7 +141,7 @@ exports.updateHealthRecord = async (req, res) => {
   try {
     const { id: familyMemberId, recordId } = req.params;
     const {
-      illness,
+      diagnosis,
       doctor_name,
       doctor_notes,
       medications,
@@ -234,9 +236,14 @@ exports.updateHealthRecord = async (req, res) => {
     let imageUrls = [];
     if (req.files && req.files.length > 0) {
       for (let file of req.files) {
-        const result = await uploadToCloudinary(file.path);
-        if (result.secure_url) {
-          imageUrls.push(result.secure_url);
+        try {
+          const result = await uploadHealthRecordImageToS3(file.buffer, file.originalname);
+          if (result.SignedUrl) {
+            imageUrls.push(result.SignedUrl);
+          }
+        } catch (error) {
+          console.error('Error uploading image to S3:', error);
+          throw new Error('Failed to upload image to S3');
         }
       }
     }
@@ -261,7 +268,7 @@ exports.updateHealthRecord = async (req, res) => {
 
     // Prepare update data
     const updateData = {
-      illness,
+      diagnosis,
       doctor_name,
       doctor_notes,
       medications: medications || "", // Store as string
