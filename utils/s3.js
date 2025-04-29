@@ -6,10 +6,17 @@ AWS.config.update({
   accessKeyId: AWS_ACCESS_KEY_ID,
   secretAccessKey: AWS_SECRET_ACCESS_KEY,
   region: AWS_REGION,
-  logger: console
+  logger: console,
+  s3DisableBodySigning: false, // Enable body signing
+  signatureVersion: 'v4'
 });
 
-const s3 = new AWS.S3();
+const s3 = new AWS.S3({
+  signatureVersion: 'v4',
+  s3DisableBodySigning: false
+});
+
+// console.log(s3)
 
 const uploadPDFToS3 = async (pdfBuffer, filename) => {
   try {
@@ -44,7 +51,7 @@ const uploadPDFToS3 = async (pdfBuffer, filename) => {
     console.log('Upload successful. Location:', uploadResult.Location);
 
     // Return the S3 object URL in the correct format
-    const objectUrl = `https://${S3_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/health_records/${filename}`;
+    const objectUrl = `https://${S3_BUCKET_NAME}.s3.${AWS_REGION}.amazonaws.com/health_records_pdf/${filename}`;
 
     return {
       ...uploadResult,

@@ -2,7 +2,7 @@ const { User } = require('../models/user.model');
 const { sendPasswordResetEmail } = require('../services/PassResetService');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const uploadToCloudinary = require('../utils/cloudinary');
+const { uploadProfileImageToS3 } = require('../utils/s3');
 const NotificationPreferences = require('../models/notificationPreferences.model');
 const validator = require('validator');
 
@@ -63,8 +63,9 @@ exports.createUser = async (req, res) => {
 
     let imageUrl = '';
     if (req.file) {
-      const uploadResult = await uploadToCloudinary(req.file.path);
-      imageUrl = uploadResult.secure_url;
+      const filename = `profile_${Date.now()}_${req.file.originalname}`;
+      const result = await uploadProfileImageToS3(req.file.buffer, filename);
+      imageUrl = result.SignedUrl;
     }
 
     const userRole = validRoles.includes(role) ? role : 'User'; // ✅ Ensure role is valid
@@ -186,8 +187,11 @@ exports.updateUserProfile = async (req, res) => {
     }
 
     if (req.file) {
-      const uploadResult = await uploadToCloudinary(req.file.path);
-      user.image = uploadResult.secure_url;
+      const filename = `profile_${Date.now()}_${req.file.originalname}`;
+      const result = await uploadProfileImageToS3(req.file.buffer, filename);
+      console.log(result);
+
+      user.image = result.SignedUrl;
     }
 
     await user.save();
@@ -198,7 +202,7 @@ exports.updateUserProfile = async (req, res) => {
       data: {
         name: user.name,
         email: user.email,
-        role: user.role, // Include role in the response
+        role: user.role,
         image: user.image,
         created_at: user.createdAt,
       },

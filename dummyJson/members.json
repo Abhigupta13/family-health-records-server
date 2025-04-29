@@ -1,0 +1,59 @@
+[
+    {
+      "_id": { "$oid": "68112b253415659b6ae9b001" },
+      "user_id": { "$oid": "68112a253415659b6ae9a223" },
+      "name": "Abhishek Gupta",
+      "relation": "Self",
+      "email": "abhishek.gupta@example.com",
+      "birth_date": { "$date": "1960-06-15T00:00:00Z" },
+      "gender": "male",
+      "contact_info": "+91-9876543210",
+      "last_doctor_visit": { "$date": "2024-12-10T00:00:00Z" },
+      "address": "123 Green St, Mumbai",
+      "age": "64",
+      "image": "https://family-health-records.s3.ap-south-1.amazonaws.com/profile_images/profile_1745955982158_male_patient.jpg"
+    },
+    {
+      "_id": { "$oid": "68112b253415659b6ae9b002" },
+      "user_id": { "$oid": "68112a253415659b6ae9a223" },
+      "name": "Sunita Sharma",
+      "relation": "Sibling",
+      "email": "sunita.sharma@example.com",
+      "birth_date": { "$date": "1965-08-20T00:00:00Z" },
+      "gender": "female",
+      "contact_info": "+91-9876543211",
+      "last_doctor_visit": { "$date": "2025-01-15T00:00:00Z" },
+      "address": "123 Green St, Mumbai",
+      "age": "59",
+      "image": "https://family-health-records.s3.ap-south-1.amazonaws.com/profile_images/profile_1745956100539_female_patient.jpeg"
+    },
+    {
+      "_id": { "$oid": "68112b253415659b6ae9b003" },
+      "user_id": { "$oid": "68112a253415659b6ae9a223" },
+      "name": "Anita Sharma",
+      "relation": "Sister",
+      "email": "anita.sharma@example.com",
+      "birth_date": { "$date": "1995-03-10T00:00:00Z" },
+      "gender": "female",
+      "contact_info": "+91-9876543212",
+      "last_doctor_visit": { "$date": "2025-02-05T00:00:00Z" },
+      "address": "123 Green St, Mumbai",
+      "age": "30",
+      "image": "https://randomuser.me/api/portraits/women/45.jpg"
+    },
+    {
+      "_id": { "$oid": "68112b253415659b6ae9b004" },
+      "user_id": { "$oid": "68112a253415659b6ae9a223" },
+      "name": "Aarav Sharma",
+      "relation": "Son",
+      "email": "aarav.sharma@example.com",
+      "birth_date": { "$date": "2015-11-25T00:00:00Z" },
+      "gender": "male",
+      "contact_info": "+91-9876543213",
+      "last_doctor_visit": { "$date": "2025-04-01T00:00:00Z" },
+      "address": "123 Green St, Mumbai",
+      "age": "9",
+      "image": "https://randomuser.me/api/portraits/men/25.jpg"
+    }
+  ]
+  

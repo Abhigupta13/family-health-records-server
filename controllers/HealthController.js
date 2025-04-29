@@ -2,8 +2,6 @@ const HealthRecord = require('../models/healthRecord.model');
 const FamilyMember = require('../models/familyMember.model');
 const { uploadHealthRecordImageToS3 } = require('../utils/s3.js');
 
-const {uploadToCloudinary} = require('../utils/cloudinary.js');
-
 exports.addHealthRecord = async (req, res) => {
   try {
     const familyMemberId = req.params.id;
@@ -17,10 +15,11 @@ exports.addHealthRecord = async (req, res) => {
     let imageUrls = [];
     if (req.files && req.files.length > 0) {
       for (let file of req.files) {
-        console.log("Uploading to Cloudinary");
-        const result = await uploadToCloudinary(file);
-        if (result.secure_url) {
-          imageUrls.push(result.secure_url);
+        console.log("Uploading to S3");
+        const filename = `health_record_${Date.now()}_${file.originalname}`;
+        const result = await uploadHealthRecordImageToS3(file.buffer, filename);
+        if (result.SignedUrl) {
+          imageUrls.push(result.SignedUrl);
         }
       }
     }

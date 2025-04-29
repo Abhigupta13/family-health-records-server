@@ -3,10 +3,9 @@ const FamilyMember = require('../models/familyMember.model');
 const crypto = require('crypto');
 const HealthRecord = require('../models/healthRecord.model');
 const PDFDocument = require('pdfkit');
-const { uploadPDFToCloudinary } = require('../utils/cloudinary');
+const { uploadPDFToS3 } = require('../utils/s3');
 
 const mongoose = require('mongoose');
-const { uploadPDFToS3 } = require('../utils/s3');
 
 exports.generateEmergencyAccessLink = async (req, res) => {
     try {
@@ -170,35 +169,26 @@ exports.uploadPDFToCloudinary = async (req, res) => {
     // Convert base64 to buffer
     const pdfBuffer = Buffer.from(base64Data, 'base64');
 
-    // Upload to Cloudinary
-    const cloudinary = require('../utils/cloudinary');
-    const result = await cloudinary.uploader.upload_stream(
-      {
-        resource_type: 'raw',
-        folder: 'health_records',
-        format: 'pdf',
-        public_id: `health_record_${memberId}_${Date.now()}`
-      },
-      async (error, result) => {
-        if (error) {
-          console.error('Cloudinary upload error:', error);
-          return res.status(500).json({
-            success: false,
-            message: 'Failed to upload PDF to Cloudinary',
-            error: error.message
-          });
-        }
+    // Upload to S3
+    const filename = `health_record_${memberId}_${Date.now()}.pdf`;
+    const result = await uploadPDFToS3(pdfBuffer, filename);
 
-        // Return the Cloudinary URL
-        return res.status(200).json({
-          success: true,
-          message: 'PDF uploaded successfully',
-          data: {
-            pdfUrl: result.secure_url
-          }
-        });
+    if (!result || !result.SignedUrl) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to upload PDF to S3',
+        error: 'Upload failed'
+      });
+    }
+
+    // Return the S3 URL
+    return res.status(200).json({
+      success: true,
+      message: 'PDF uploaded successfully',
+      data: {
+        pdfUrl: result.SignedUrl
       }
-    ).end(pdfBuffer);
+    });
 
   } catch (error) {
     console.error('Error uploading PDF:', error);

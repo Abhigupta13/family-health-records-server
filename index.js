@@ -112,7 +112,7 @@ app.use('/api/add', addressRoutes);
 app.use('/api/ocr', ocrRoutes);
 
 // Start server
-httpServer.listen(process.env.PORT || 8080, async () => {
+app.listen(process.env.PORT || 8080, async () => {
   connectDB();
   console.log('Server started on PORT', process.env.PORT);
 });
